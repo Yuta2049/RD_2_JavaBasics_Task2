@@ -1,3 +1,6 @@
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class Service {
 
     private class PositionWithResult {
@@ -90,11 +93,7 @@ public class Service {
 
         double result = 0;
 
-
-
-        // тут цикл пока не останется знаков действий
-        //while (Math.max(expression.indexOf("+"), expression.indexOf("-"))+ Math.max(expression.indexOf("*"), expression.indexOf("/")) > -2)
-        while (Math.max(expression.indexOf("*"), expression.indexOf("/")) >= 0)
+        while (Math.max(expression.indexOf("*"), expression.indexOf("/")) > 0)
         {
 
             int indexMinus = expression.indexOf("/");
@@ -164,7 +163,7 @@ public class Service {
 
             expression = expression.substring(0, leftResult.getPosition()) + Double.valueOf(result) + expression.substring(rightResult.getPosition() + 1);
 
-            System.out.println("Выражение после замены: " + expression);
+            //System.out.println("Выражение после замены: " + expression);
 
         }
 
@@ -174,9 +173,37 @@ public class Service {
 
     public double calc(String expression) {
 
+        double result = 0.0;
 
+        // тут цикл пока не останется скобок
+        while (Math.max(expression.indexOf("("), expression.indexOf(")")) > 0)
+        {
+            //String regex = "\\(.[^\\(\\)]*\\)";
+            String regex = "[\\(][^\\(\\)]*+[\\)]";
+            Pattern pattern = Pattern.compile(regex);
 
-        double result = calcExpressionWithoutParenthesis(expression);
+            Matcher match = pattern.matcher(expression);
+
+            int matchCounter = 0;
+            System.out.println("bu");
+            while (match.find()){
+                //matchCounter++;
+                System.out.println("start(): " + match.start());
+                System.out.println("end(): " + match.end());
+                //System.out.println("Number of match: " + matchCounter);
+
+                //expression = calcExpressionWithoutParenthesis(expression);
+                System.out.println("ВЫР: " + expression.substring(match.start(), match.end()));
+
+                //expression = expression.substring(0, match.start()) + Double.valueOf(calcExpressionWithoutParenthesis(expression.substring(match.start(), match.end()))) + expression.substring(match.end());
+                //expression = expression.replaceFirst(regex, String.valueOf(calcExpressionWithoutParenthesis(expression.substring(match.start(), match.end()))));
+                expression = match.replaceFirst(String.valueOf(calcExpressionWithoutParenthesis(expression.substring(match.start(), match.end()))));
+
+                System.out.println("Выражение после замены: " + expression);
+            }
+        }
+
+        result = calcExpressionWithoutParenthesis(expression);
 
         return result;
     }
