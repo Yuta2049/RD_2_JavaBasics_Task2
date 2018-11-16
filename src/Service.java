@@ -3,157 +3,96 @@ import java.util.regex.Pattern;
 
 public class Service {
 
-    private class PositionWithResult {
-        private int position;
-        private double result;
+    private double calculateResult(String expression) {
 
-        public int getPosition() {
-            return position;
-        }
+        double result = 0;
+        String regex = "[\\+\\-\\*\\/]";
 
-        public double getResult() {
-            return result;
-        }
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(expression);
 
-        public void setPosition(int position) {
-            this.position = position;
-        }
+        while (matcher.find()) {
 
-        public void setResult(double result) {
-            this.result = result;
-        }
-    }
+            int end = matcher.end();
 
-    private PositionWithResult getLeftNumber(String expression, int indexOfSign) {
-
-        String number = "";
-        int position = 0;
-        for (int i = indexOfSign - 1; i >= 0; i--) {
-            char currentChar = expression.charAt(i);
-            if ((Character.isDigit(currentChar) || currentChar == '.' || currentChar == ',') || (currentChar == '-' && i == 0)) {
-                number = expression.charAt(i) + number;
-                position = i;
-            } else {
-                break;
+            if (end == 1) {
+                continue;
             }
-        }
 
-        //System.out.println("Левое число: "+number);
+            double leftNumber;
+            double rightNumber;
 
-        double numberDouble = 0.0;
-        try {
-            numberDouble = Double.parseDouble(number);
-        } catch (Exception e) {
-            System.out.println("Не получилось преобразовать текст " + number + " в число");
-            throw new NumberFormatException();
-        }
+            try {
+                String stringLeftNumber = expression.substring(0, end-1);
+                if (stringLeftNumber.indexOf(".", 0) < 0) {
+                    stringLeftNumber = stringLeftNumber+".0";
+                }
+                leftNumber = Double.parseDouble(stringLeftNumber);
 
-        PositionWithResult positionWithResult = new PositionWithResult();
-        positionWithResult.setPosition(position);
-        positionWithResult.setResult(numberDouble);
 
-        return positionWithResult;
-    }
-
-    private PositionWithResult getRightNumber(String expression, int indexOfSign) {
-
-        String number = "";
-        int position = 0;
-        for (int i = indexOfSign + 1; i < expression.length(); i++) {
-            char currentChar = expression.charAt(i);
-            if (Character.isDigit(currentChar) || currentChar == '.' || currentChar == ',') {
-                number = number + expression.charAt(i);
-                position = i;
-            } else {
-                break;
+                 String stringRightNumber = expression.substring(end);
+                if (stringRightNumber.indexOf(".", 0) < 0) {
+                    stringRightNumber = stringRightNumber+".0";
+                }
+                rightNumber = Double.parseDouble(stringRightNumber);
             }
-        }
+            catch (Exception e) {
+                System.out.println("Не удалось вычислить выражение: " + expression + ". Ошибка при переводе в число");
+                throw new NumberFormatException();
+            }
 
-        //System.out.println("Правое число: "+number);
+            switch (expression.charAt(matcher.end()-1)) {
+                case '*' : {result = leftNumber * rightNumber; break;}
+                case '/' : {result = leftNumber / rightNumber; break;}
+                case '+' : {result = leftNumber + rightNumber; break;}
+                case '-' : {result = leftNumber - rightNumber; break;}
+            }
 
-        double numberDouble = 0.0;
-        try {
-            numberDouble = Double.parseDouble(number);
-        } catch (Exception e) {
-            System.out.println("Не удалось преобразовать текст " + number + " в число");
-            throw new NumberFormatException();
-        }
-
-        PositionWithResult positionWithResult = new PositionWithResult();
-        positionWithResult.setPosition(position);
-        positionWithResult.setResult(numberDouble);
-
-        return positionWithResult;
     }
+    return result;
+}
 
 
     private double calcExpressionWithoutParenthesis(String expression) {
 
         double result = 0;
+        String regex="";
 
-        while (Math.max(expression.indexOf("*", 1), expression.indexOf("/", 1)) > 0) {
+        char symbol1;
+        char symbol2;
 
-            int indexMinus = expression.indexOf("/", 1);
-            int indexPlus = expression.indexOf("*", 1);
+        for (int i=0; i<2; i++) {
 
-            int indexOfSign = 0;
-            String sign = "Plus";
-
-            if ((indexMinus > 0 && indexPlus > 0 && indexMinus < indexPlus) || (indexMinus > 0 && indexPlus < 0)) {
-                indexOfSign = indexMinus;
-                sign = "Minus";
-            } else if ((indexMinus > 0 && indexPlus > 0 && indexMinus > indexPlus) || (indexPlus > 0 && indexMinus < 0)) {
-                indexOfSign = indexPlus;
-                sign = "Plus";
-            }
-
-            PositionWithResult leftResult = getLeftNumber(expression, indexOfSign);
-            PositionWithResult rightResult = getRightNumber(expression, indexOfSign);
-
-            if (sign == "Minus") {
-                result = leftResult.getResult() / rightResult.getResult();
+            if (i == 0) {
+                regex = "[0-9\\.]+[\\*\\/][0-9\\.]+";
+                symbol1 = '*';
+                symbol2 = '/';
             } else {
-                result = leftResult.getResult() * rightResult.getResult();
+                regex = "[0-9\\.]+[\\+\\-][0-9\\.]+";
+                symbol1 = '+';
+                symbol2 = '-';
             }
 
-            expression = expression.substring(0, leftResult.getPosition()) + Double.valueOf(result) + expression.substring(rightResult.getPosition() + 1);
+            while (Math.max(expression.indexOf(symbol1, 1), expression.indexOf(symbol2, 1)) > 0) {
 
-//            System.out.println("Выражение после замены: " + expression);
+                Pattern pattern = Pattern.compile(regex);
+                Matcher matcher = pattern.matcher(expression);
 
-        }
+                if (matcher.find()) {
 
+                    int start = matcher.start();
+                    int end = matcher.end();
 
-        // тут цикл пока не останется знаков действий
-        //while (Math.max(expression.indexOf("+"), expression.indexOf("-"))+ Math.max(expression.indexOf("*"), expression.indexOf("/")) > -2)
-        while (Math.max(expression.indexOf("+", 1), expression.indexOf("-", 1)) > 0) {
+                    if (start == 1 && expression.charAt(0) == '-') {
+                        start = 0;
+                    }
 
-            int indexMinus = expression.indexOf("-", 1);
-            int indexPlus = expression.indexOf("+", 1);
+                    result = calculateResult(expression.substring(start, end));
 
-            int indexOfSign = 0;
-            String sign = "Plus";
+                    expression = expression.substring(0, start) + Double.valueOf(result) + expression.substring(end);
 
-            if ((indexMinus > 0 && indexPlus > 0 && indexMinus < indexPlus) || (indexMinus > 0 && indexPlus < 0)) {
-                indexOfSign = indexMinus;
-                sign = "Minus";
-            } else if ((indexMinus > 0 && indexPlus > 0 && indexMinus > indexPlus) || (indexPlus > 0 && indexMinus < 0)) {
-                indexOfSign = indexPlus;
-                sign = "Plus";
+                }
             }
-
-            PositionWithResult leftResult = getLeftNumber(expression, indexOfSign);
-            PositionWithResult rightResult = getRightNumber(expression, indexOfSign);
-
-            if (sign == "Minus") {
-                result = leftResult.getResult() - rightResult.getResult();
-            } else {
-                result = leftResult.getResult() + rightResult.getResult();
-            }
-
-            expression = expression.substring(0, leftResult.getPosition()) + Double.valueOf(result) + expression.substring(rightResult.getPosition() + 1);
-
-//            System.out.println("Выражение после замены: " + expression);
-
         }
 
         return result;
@@ -166,7 +105,7 @@ public class Service {
 
         // тут цикл пока не останется скобок
         while (Math.max(expression.indexOf("("), expression.indexOf(")")) > 0) {
-            //String regex = "\\(.[^\\(\\)]*\\)";
+
             String regex = "[\\(][^\\(\\)]*+[\\)]";
             Pattern pattern = Pattern.compile(regex);
 
@@ -174,7 +113,7 @@ public class Service {
 
             while (match.find()) {
 
-                expression = match.replaceFirst(String.valueOf(calcExpressionWithoutParenthesis(expression.substring(match.start(), match.end()))));
+                expression = match.replaceFirst(String.valueOf(calcExpressionWithoutParenthesis(expression.substring(match.start()+1, match.end()-1))));
 
                 System.out.println("Выражение после замены: " + expression);
             }
