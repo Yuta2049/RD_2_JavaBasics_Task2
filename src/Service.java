@@ -23,45 +23,56 @@ public class Service {
             double rightNumber;
 
             try {
-                String stringLeftNumber = expression.substring(0, end-1);
-                if (stringLeftNumber.indexOf(".", 0) < 0) {
-                    stringLeftNumber = stringLeftNumber+".0";
+                String stringLeftNumber = expression.substring(0, end - 1);
+                if (!stringLeftNumber.contains(".")) {
+                    stringLeftNumber = stringLeftNumber + ".0";
                 }
                 leftNumber = Double.parseDouble(stringLeftNumber);
 
 
-                 String stringRightNumber = expression.substring(end);
-                if (stringRightNumber.indexOf(".", 0) < 0) {
-                    stringRightNumber = stringRightNumber+".0";
+                String stringRightNumber = expression.substring(end);
+                if (!stringRightNumber.contains(".")) {
+                    stringRightNumber = stringRightNumber + ".0";
                 }
                 rightNumber = Double.parseDouble(stringRightNumber);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 System.out.println("Не удалось вычислить выражение: " + expression + ". Ошибка при переводе в число");
                 throw new NumberFormatException();
             }
 
-            switch (expression.charAt(matcher.end()-1)) {
-                case '*' : {result = leftNumber * rightNumber; break;}
-                case '/' : {result = leftNumber / rightNumber; break;}
-                case '+' : {result = leftNumber + rightNumber; break;}
-                case '-' : {result = leftNumber - rightNumber; break;}
+            switch (expression.charAt(matcher.end() - 1)) {
+                case '*': {
+                    result = leftNumber * rightNumber;
+                    break;
+                }
+                case '/': {
+                    result = leftNumber / rightNumber;
+                    break;
+                }
+                case '+': {
+                    result = leftNumber + rightNumber;
+                    break;
+                }
+                case '-': {
+                    result = leftNumber - rightNumber;
+                    break;
+                }
             }
 
+        }
+        return result;
     }
-    return result;
-}
 
 
     private double calcExpressionWithoutParenthesis(String expression) {
 
         double result = 0;
-        String regex="";
+        String regex;
 
         char symbol1;
         char symbol2;
 
-        for (int i=0; i<2; i++) {
+        for (int i = 0; i < 2; i++) {
 
             if (i == 0) {
                 regex = "[0-9\\.]+[\\*\\/][0-9\\.]+";
@@ -101,7 +112,7 @@ public class Service {
 
     public double calc(String expression) {
 
-        double result = 0.0;
+        double result;
 
         // тут цикл пока не останется скобок
         while (Math.max(expression.indexOf("("), expression.indexOf(")")) > 0) {
@@ -113,7 +124,7 @@ public class Service {
 
             while (match.find()) {
 
-                expression = match.replaceFirst(String.valueOf(calcExpressionWithoutParenthesis(expression.substring(match.start()+1, match.end()-1))));
+                expression = match.replaceFirst(String.valueOf(calcExpressionWithoutParenthesis(expression.substring(match.start() + 1, match.end() - 1))));
 
                 System.out.println("Выражение после замены: " + expression);
             }
