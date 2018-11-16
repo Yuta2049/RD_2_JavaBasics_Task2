@@ -48,7 +48,6 @@ public class Service {
             throw new NumberFormatException();
         }
 
-
         PositionWithResult positionWithResult = new PositionWithResult();
         positionWithResult.setPosition(position);
         positionWithResult.setResult(numberDouble);
@@ -117,12 +116,9 @@ public class Service {
                 result = leftResult.getResult() * rightResult.getResult();
             }
 
-            // System.out.println("Левый символ: " + leftResult.getPosition());
-            //System.out.println("Правый символ: " + rightResult.getPosition());
-
             expression = expression.substring(0, leftResult.getPosition()) + Double.valueOf(result) + expression.substring(rightResult.getPosition() + 1);
 
-            System.out.println("Выражение после замены: " + expression);
+//            System.out.println("Выражение после замены: " + expression);
 
         }
 
@@ -154,12 +150,9 @@ public class Service {
                 result = leftResult.getResult() + rightResult.getResult();
             }
 
-            //System.out.println("Левый символ: " + leftResult.getPosition());
-            //System.out.println("Правый символ: " + rightResult.getPosition());
-
             expression = expression.substring(0, leftResult.getPosition()) + Double.valueOf(result) + expression.substring(rightResult.getPosition() + 1);
 
-            //System.out.println("Выражение после замены: " + expression);
+//            System.out.println("Выражение после замены: " + expression);
 
         }
 
@@ -186,9 +179,6 @@ public class Service {
                 System.out.println("Выражение после замены: " + expression);
             }
         }
-
-//        if ((Math.max(expression.indexOf("*", 1), expression.indexOf("/", 1)) > 0) ||
-//           (Math.max(expression.indexOf("+", 1), expression.indexOf("-", 1)) > 0)) {
 
         try {
             result = Double.valueOf(expression);
